@@ -1,0 +1,74 @@
+-- Provide the name of the sales_rep in each region with the largest amount of total_amt_usd sales.
+SELECT t3.sales_rep, t3.region_name, t3.total_sales
+FROM
+  (SELECT region_name, MAX(total_sales) max_sales
+  FROM
+    (SELECT sr.name sales_rep, r.name region_name, SUM(o.total_amt_usd) total_sales
+    FROM accounts a
+    JOIN sales_reps sr
+    ON a.sales_rep_id = sr.id
+    JOIN region r
+    ON sr.region_id = r.id
+    JOIN orders o 
+    ON a.id = o.account_id
+    GROUP BY 1, 2) t1
+ ) t2
+JOIN 
+  (SELECT sr.name sales_rep, r.name region_name, SUM(o.total_amt_usd) total_sales
+  FROM accounts a
+  JOIN sales_reps sr
+  ON a.sales_rep_id = sr.id
+  JOIN region r
+  ON sr.region_id = r.id
+  JOIN orders o 
+  ON a.id = o.account_id
+  GROUP BY 1, 2
+  ORDER BY 3 DESC) t3
+ON t3.region_name = t2.region_name AND t3.total_sales = t2.max_sales
+
+
+
+-- For the region with the largest (sum) of sales total_amt_usd, how many total (count) orders were placed? 
+SELECT
+  (SELECT MAX(t1.total_sales)
+  FROM
+    (SELECT r.name region, SUM(o.total_amt_usd) total_sales
+        FROM accounts a
+        JOIN sales_reps sr
+        ON a.sales_rep_id = sr.id
+        JOIN region r
+        ON sr.region_id = r.id
+        JOIN orders o 
+        ON a.id = o.account_id
+        GROUP BY 1) t1
+   ) t2
+JOIN 
+ (SELECT r.name region, SUM(o.total_amt_usd) total_sales
+      FROM accounts a
+      JOIN sales_reps sr
+      ON a.sales_rep_id = sr.id
+      JOIN region r
+      ON sr.region_id = r.id
+      JOIN orders o 
+      ON a.id = o.account_id
+      GROUP BY 1) t3
+ON 
+t3.region = t2.region AND t3.total_sales = t2.total_sales
+ 
+ 
+
+
+
+
+
+
+-- For the name of the account that purchased the most (in total over their lifetime as a customer) standard_qty paper, how many accounts still had more in total purchases? 
+
+
+-- For the customer that spent the most (in total over their lifetime as a customer) total_amt_usd, how many web_events did they have for each channel?
+
+
+-- What is the lifetime average amount spent in terms of total_amt_usd for the top 10 total spending accounts?
+
+
+-- What is the lifetime average amount spent in terms of total_amt_usd for only the companies that spent more than the average of all orders.
