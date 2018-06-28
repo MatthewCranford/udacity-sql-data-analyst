@@ -89,6 +89,29 @@ ON a.id = we.account_id AND a.name =
 GROUP BY 1,2,3
 
 -- What is the lifetime average amount spent in terms of total_amt_usd for the top 10 total spending accounts?
-
+SELECT AVG(t1.total) total_avg
+FROM
+  (SELECT a.name account, SUM(o.total_amt_usd) total
+  FROM accounts a 
+  JOIN orders o 
+  ON a.id = o.account_id
+  GROUP BY 1 
+  ORDER BY 2 DESC
+  LIMIT 10) t1
 
 -- What is the lifetime average amount spent in terms of total_amt_usd for only the companies that spent more than the average of all orders.
+SELECT AVG(t2.avg_tot)
+FROM
+  (SELECT a.name account ,AVG(o.total_amt_usd) avg_tot
+  FROM accounts a 
+  JOIN orders o 
+  ON a.id = o.account_id
+  GROUP BY 1
+  HAVING AVG(o.total_amt_usd) >
+    (SELECT AVG(o.total_amt_usd) avg_all
+    FROM accounts a 
+    JOIN orders o 
+    ON a.id = o.account_id)
+  ) t2
+
+
