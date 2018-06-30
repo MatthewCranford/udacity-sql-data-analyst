@@ -57,24 +57,46 @@ WITH t1 AS (
     ON a.id = o.account_id
     GROUP BY 1
     ORDER BY 2 DESC
-    LIMIT 1)
+    LIMIT 1),
+t2 AS (
+    SELECT a.name
+    FROM orders o
+    JOIN accounts a
+    ON a.id = o.account_id
+    GROUP BY 1
+    HAVING SUM(o.total) > (SELECT std_purchases FROM t1))
 
-SELECT a.name, SUM(o.total)
-FROM accounts a 
-JOIN orders o
-ON a.id = o.account_id
-JOIN sales_reps sr 
-ON a.sales_rep_id = sr.id 
-JOIN region r 
-ON r.id = sr.region_id 
-
-HAVING o.total > (SELECT * FROM t1)
+SELECT COUNT(*)
+FROM t2
 
 
 -- For the customer that spent the most (in total over their lifetime as a customer) total_amt_usd, how many web_events did they have for each channel?
+WITH t1 AS (
+    SELECT a.name customer, SUM(o.total_amt_usd) total
+    FROM accounts a
+    JOIN web_events we
+    ON a.id = we.account_id
+    JOIN orders o 
+    ON a.id = o.account_id
+    GROUP BY 1
+    ORDER BY 2 DESC
+    LIMIT 1)
 
+SELECT a.name, we.channel, COUNT(we.channel) num_chans
+FROM accounts a
+JOIN web_events we
+ON a.id = we.account_id AND a.name = (SELECT customer FROM t1)
+GROUP BY 1, 2
+ORDER BY 3
 
 -- What is the lifetime average amount spent in terms of total_amt_usd for the top 10 total spending accounts?
+SELECT a.id, SUM(o.total_amt_usd)
+FROM accounts a
+JOIN orders o 
+ON a.id = o.account_id
+GROUP BY 1
+ORDER BY 2 DESC
+LIMIT 10
 
 
 -- What is the lifetime average amount spent in terms of total_amt_usd for only the companies that spent more than the average of all accounts.
