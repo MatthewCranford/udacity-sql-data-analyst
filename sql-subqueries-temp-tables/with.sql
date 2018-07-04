@@ -90,13 +90,26 @@ GROUP BY 1, 2
 ORDER BY 3
 
 -- What is the lifetime average amount spent in terms of total_amt_usd for the top 10 total spending accounts?
-SELECT a.id, SUM(o.total_amt_usd)
-FROM accounts a
-JOIN orders o 
-ON a.id = o.account_id
-GROUP BY 1
-ORDER BY 2 DESC
-LIMIT 10
+WITH t1 AS (
+    SELECT a.id, SUM(o.total_amt_usd) total
+    FROM accounts a
+    JOIN orders o 
+    ON a.id = o.account_id
+    GROUP BY 1
+    ORDER BY 2 DESC
+    LIMIT 10)
 
+SELECT AVG(total)
+FROM T1
 
 -- What is the lifetime average amount spent in terms of total_amt_usd for only the companies that spent more than the average of all accounts.
+WITH t1 AS (
+    SELECT a.id, SUM(o.total_amt_usd) total, AVG(total)
+    FROM accounts a
+    JOIN orders o 
+    ON a.id = o.account_id
+    GROUP BY 1
+    ORDER BY 2 DESC)
+
+SELECT *
+FROM T1
